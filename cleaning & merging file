@@ -1,0 +1,57 @@
+
+####cleaning urban college education data####
+####created: 11/11/20
+####last edited: 11/12/20
+
+
+#read in csv file on college loans
+
+states_colleges_loans <- read_csv("Desktop/states_colleges_loans.csv")
+
+#created a dataframe with most recent year of data (2017)
+library(tidyverse)
+loans_2017 <- undergrad_loans%>%
+                  filter(year==2017
+
+#downloaded & read in data on HBCUs in AL, GA, and NC
+                                                 
+EducationDataPortal_11_12_2020_institutions <- read_csv("Desktop/EducationDataPortal_11.12.2020_institutions.csv")
+hbcu <- EducationDataPortal_11_12_2020_institutions_1_        
+
+#based on university id, added column to loans 2017 data with hbcu designation 
+
+loans_2017_new <- mutate(loans_2017, hbcu = ifelse(unitid==100654 |
+                                                     unitid== 100724 |
+                                                     unitid== 101073 |
+                                                     unitid== 101240 |
+                                                     unitid== 101675 |
+                                                     unitid== 101912 |
+                                                     unitid== 102030 |
+                                                     unitid== 102058 |
+                                                     unitid== 102067 |
+                                                     unitid== 102270 |
+                                                     unitid== 102298 |
+                                                     unitid== 102377 |
+                                                     unitid== 131399 |
+                                                     unitid== 131520 |
+                                                     unitid== 138716 |
+                                                     unitid== 138947 |
+                                                     unitid== 139719 |
+                                                     unitid== 140146 |
+                                                     unitid== 140553 |
+                                                     unitid== 140720 | 
+                                                     unitid== 140960 | 
+                                                     unitid== 141060 |
+                                                     unitid== 197993 |
+                                                     unitid== 198507 | 
+                                                     unitid== 198543 | 
+                                                     unitid== 198756 | 
+                                                     unitid== 198862 | 
+                                                     unitid== 199102 | 
+                                                     unitid== 199157 | 
+                                                     unitid== 199582 | 
+                                                     unitid== 199643 |
+                                                     unitid== 199999 & !NA, "Yes", "No")) 
+
+View(loans_2017_new)
+                         
