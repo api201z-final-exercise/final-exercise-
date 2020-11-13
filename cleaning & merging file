@@ -54,4 +54,44 @@ loans_2017_new <- mutate(loans_2017, hbcu = ifelse(unitid==100654 |
                                                      unitid== 199999 & !NA, "Yes", "No")) 
 
 View(loans_2017_new)
+
+
+
+library(tidyverse)
+loans_2017_new2<- loans_2017_new %>%
+                    mutate(loan_amount = value_loan_disbursements_unitid / num_loans_disbursed_unitid, na.rm=TRUE)
+View(loans_2017_new2)
+
+###summary statistics###
+
+loans_2017_new2 %>%
+  group_by(loan_type, hbcu) %>%
+  drop_na(loan_amount, hbcu) %>%
+  summarise(mean_loan_amount = mean(loan_amount))
+
+loan_summary_hbcu <- loans_2017_new2 %>%
+                  filter(hbcu=="Yes") %>%
+                  summarise(min = min(loan_amount, na.rm=TRUE)
+                    ,max = max(loan_amount, na.rm=TRUE) 
+                    ,mean = mean(loan_amount, na.rm=TRUE) 
+                    ,sd = sd(loan_amount, na.rm=TRUE)
+                    ,n = n()
+                    ,q25 = quantile(loan_amount, .25, na.rm=TRUE)
+                    ,q50 = quantile(loan_amount, .50, na.rm=TRUE)
+                    ,q75 = quantile(loan_amount, .75, na.rm=TRUE))
+              
+loan_summary_pwi <- loans_2017_new2 %>%
+                    filter(hbcu=="No") %>%
+                    summarise(min = min(loan_amount, na.rm=TRUE)
+                            ,max = max(loan_amount, na.rm=TRUE) 
+                            ,mean = mean(loan_amount, na.rm=TRUE) 
+                            ,sd = sd(loan_amount, na.rm=TRUE)
+                            ,n = n()
+                            ,q25 = quantile(loan_amount, .25, na.rm=TRUE)
+                            ,q50 = quantile(loan_amount, .50, na.rm=TRUE)
+                            ,q75 = quantile(loan_amount, .75, na.rm=TRUE))
+                  
+##creating a table with all summary statistics, still need to figure out how to put labels?
+library(knitr)
+kable(rbind(loan_summary_hbcu, loan_summary_pwi))   
                          
