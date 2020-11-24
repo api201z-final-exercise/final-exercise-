@@ -1,0 +1,263 @@
+---
+title: "Final Exercise"
+author: "Ayotomiwa Ojo"
+date: "11/9/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+```{r}
+install.packages('devtools')
+devtools::install_github('UrbanInstitute/education-data-package-r')
+```
+
+```{r}
+library(educationdata)
+
+colleges.df <- get_education_data(level = 'college-university', 
+                         source = 'fsa', 
+                         topic = 'grants',
+                         filters = list(year = 2010:2017),
+                         add_labels = FALSE)
+```
+
+```{r}
+library(dplyr)
+
+states_colleges_grants <- colleges.df %>% 
+  filter(state == 1 & 11 & 13 & 37)
+
+```
+
+```{r}
+write.csv(states_colleges, "/Users/tomiojo/Downloads/states_colleges.csv")
+```
+
+
+```{r}
+colleges_loans.df <- get_education_data(level = 'college-university', 
+                         source = 'fsa', 
+                         topic = 'loans',
+                         filters = list(year = 2010:2017),
+                         add_labels = TRUE)
+```
+
+```{r}
+library (dplyr)
+
+states_colleges_loans <- colleges_loans.df %>% 
+  filter(as.logical(fips %in% c("Alabama", "North Carolina", "Georgia","District of Columbia")))
+```
+
+```{r}
+write.csv(states_colleges_loans, "/Users/tomiojo/Downloads/states_colleges_loans.csv")
+```
+
+
+```{r}
+colleges_instichar.df <- get_education_data(level = 'college-university', 
+                         source = 'ipeds', 
+                         topic = 'institutional-characteristics',
+                         filters = list(year = 2010:2017),
+                         add_labels = )
+```
+
+```{r}
+states_colleges_instichar <- colleges_instichar.df %>% 
+  filter(fips == 1 & 11 & 13 & 37)
+```
+
+```{r}
+write.csv(states_colleges_instichar, "/Users/tomiojo/Downloads/states_colleges_instichar.csv")
+```
+
+
+```{r}
+colleges_studchar.df <- get_education_data(level = 'college-university', 
+                         source = 'scorecard', 
+                         topic = 'student-characteristics',
+                         by = "aid-applicants",
+                         filters = list(year = 2010:2016),
+                         add_labels = TRUE)
+```
+
+```{r}
+states_colleges_studentchar <- colleges_studchar.df %>% 
+  filter(as.logical(fips %in% c("Alabama", "North Carolina", "Georgia","District of Columbia")))
+```
+
+```{r}
+write.csv(states_colleges_studentchar, "/Users/tomiojo/Downloads/states_colleges_studentchar.csv")
+```
+
+
+```{r}
+colleges_gradrates.df <- get_education_data(level = 'college-university', 
+                         source = 'ipeds', 
+                         topic = 'grad-rates',
+                         filters = list(year = 2010:2016),
+                         add_labels = TRUE)
+```
+
+```{r}
+states_colleges_gradrates <- colleges_gradrates.df %>% 
+  filter(as.logical(fips %in% c("Alabama", "North Carolina", "Georgia","District of Columbia")))
+```
+
+
+```{r}
+write.csv(states_colleges_gradrates, "/Users/tomiojo/Downloads/states_colleges_gradrates.csv")
+```
+
+```{r}
+library(dplyr)
+
+undergrad_loans <- states_colleges_loans %>% 
+  filter(as.logical(loan_type %in% c("Subsidized Direct Loan&ndash,Undergraduate", "Unsubsidized Direct Loan&ndash,Undergraduate", "Direct Loan Parent PLUS", "Subsidized Federal Family Education Loans", "Unsubsidized Federal Family Education Loans", "Parent PLUS Federal Family Education Loans", "PLUS Federal Family Education Loans")))
+```
+
+```{r}
+
+write.csv(undergrad_loans, "/Users/tomiojo/Downloads/undergrad_loans.csv")
+
+```
+
+```{r}
+#### Data Merging ####
+
+
+
+library(educationdata)
+library(dplyr)
+
+##pulling relevant datasets together
+
+enroll <- get_education_data(level = "college-university",
+                           source = "ipeds",
+                           topic = "enrollment-full-time-equivalent",
+                           filters = list(year = 2010:2012, level_of_study = "undergraduate"))
+#selecting relevant variables 
+View(enroll2)
+enroll2 <- enroll %>%
+            select(unitid, year, fips, est_fte)
+                           
+
+#This endpoint contains data on total first-time, full-time degree-seeking students receiving different types of aid.
+grants <- get_education_data(level = "college-university",
+                           source = "ipeds",
+                           topic = "sfa-ftft",
+                           filters = list(year = 2010:2012))
+View(grants)
+#selecting relevant variables
+grants2 <- grants %>%
+  select(unitid, year, fips, type_of_aid, number_of_students, percent_of_students, average_amount)
+
+grad_rates <- get_education_data(level = "college-university",
+                           source = "ipeds",
+                           topic = "grad-rates",
+                           filters = list(year = 2010:2012))
+View(grad_rates)
+
+#selecting relevant variables
+grad_rates2 <- grad_rates %>%
+  select(unitid, year, fips, cohort_year, race, sex, completion_rate_150pct)
+
+repay <- get_education_data(level = "college-university",
+                           source = "scorecard",
+                           topic = "repayment",
+                           filters = list(year = 2010:2012))
+
+loans <- get_education_data(level = "college-university",
+                           source = "fsa",
+                           topic = "loans",
+                           filters = list(year = 2010:2012))
+#adding hbcu designation
+loans2 <- mutate(loans, hbcu = ifelse(unitid==100654 |
+                                                     unitid== 100724 |
+                                                     unitid== 101073 |
+                                                     unitid== 101240 |
+                                                     unitid== 101675 |
+                                                     unitid== 101912 |
+                                                     unitid== 102030 |
+                                                     unitid== 102058 |
+                                                     unitid== 102067 |
+                                                     unitid== 102270 |
+                                                     unitid== 102298 |
+                                                     unitid== 102377 |
+                                                     unitid== 131399 |
+                                                     unitid== 131520 |
+                                                     unitid== 138716 |
+                                                     unitid== 138947 |
+                                                     unitid== 139719 |
+                                                     unitid== 140146 |
+                                                     unitid== 140553 |
+                                                     unitid== 140720 | 
+                                                     unitid== 140960 | 
+                                                     unitid== 141060 |
+                                                     unitid== 197993 |
+                                                     unitid== 198507 | 
+                                                     unitid== 198543 | 
+                                                     unitid== 198756 | 
+                                                     unitid== 198862 | 
+                                                     unitid== 199102 | 
+                                                     unitid== 199157 | 
+                                                     unitid== 199582 | 
+                                                     unitid== 199643 |
+                                                     unitid== 199999 & !NA, "Yes", "No")) 
+
+
+```
+
+```{r}
+#merging individual datasets together
+repay_grad_rates <- merge(repay, grad_rates2, by= c("unitid", "year"))
+enroll_grants <- merge(enroll2, grants2, by=c("unitid", "year"))
+
+enroll_grants_loans <- merge(enroll_grants, loans2, by=c("unitid", "year"))
+```
+
+
+```{r}
+#filter states 
+library(dplyr)
+
+repay_grad_rates_f <- repay_grad_rates %>% 
+  filter(fips.x ==  1 & 11 & 13 & 37)
+
+enroll_grants_loans_f <- enroll_grants_loans %>% 
+   filter(fips.x == 1 & 11 & 13 & 37)
+
+```
+
+
+```{r}
+#merging master file 
+master_file <- merge(repay_grad_rates_f, enroll_grants_loans_f, by= c("unitid", "year"))
+
+write.csv(master_file, "/Users/tomiojo/Downloads/master_file.csv")
+```
+
