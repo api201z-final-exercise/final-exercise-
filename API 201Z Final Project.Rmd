@@ -246,10 +246,16 @@ enroll_grants_loans <- merge(enroll_grants, loans2, by=c("unitid", "year"))
 library(dplyr)
 
 repay_grad_rates_f <- repay_grad_rates %>% 
-  filter(fips.x ==  1 & 11 & 13 & 37)
+  filter(fips.x ==  1| 
+           fips.x== 11|
+           fips.x== 13| 
+           fips.x == 37)
 
 enroll_grants_loans_f <- enroll_grants_loans %>% 
-   filter(fips.x == 1 & 11 & 13 & 37)
+   filter(fips.x ==  1| 
+           fips.x== 11|
+           fips.x== 13| 
+           fips.x == 37) 
 
 ```
 
@@ -258,6 +264,85 @@ enroll_grants_loans_f <- enroll_grants_loans %>%
 #merging master file 
 master_file <- merge(repay_grad_rates_f, enroll_grants_loans_f, by= c("unitid", "year"))
 
-write.csv(master_file, "/Users/tomiojo/Downloads/master_file.csv")
 ```
+
+
+```{r}
+#create master file of loan type 1, any aid, for black and white, male and female, cohort start 2007)
+new_master_file <- master_file %>% 
+  filter(loan_type == 1 ) %>% 
+  filter(type_of_aid == 1) %>% 
+  filter(race == 1 & 2) %>% 
+  filter(sex == 99) %>% 
+  filter (cohort_year.x == 2007)
+
+#get rid of duplicate rows 
+final_master_file <- unique(new_master_file)
+
+```
+
+```{r}
+#create master file of loan type 4, any aid, for black and white, male and female, cohort start 2007)
+loan4_master_file <- master_file %>% 
+  filter(loan_type == 4 ) %>% 
+  filter(type_of_aid == 1) %>% 
+  filter(race == 1 & 2) %>% 
+  filter(sex == 99) %>% 
+  filter (cohort_year.x == 2007)
+
+#get rid of duplicate rows 
+loan4_master_file <- unique(loan4_master_file)
+
+#save file
+write.csv(loan4_master_file, "/Users/tomiojo/Downloads/loan4_master.csv")
+
+
+```
+
+
+```{r}
+#create master file of loan type 7, any aid, for black and white, male and female, cohort start 2007)
+loan7_master_file <- master_file %>% 
+  filter(loan_type == 7 ) %>% 
+  filter(type_of_aid == 1) %>% 
+  filter(race == 1 & 2) %>% 
+  filter(sex == 99) %>% 
+  filter (cohort_year.x == 2007)
+
+#get rid of duplicate rows 
+loan7_master_file <- unique(loan7_master_file)
+
+#save file
+write.csv(loan7_master_file, "/Users/tomiojo/Downloads/loan7_master.csv")
+
+```
+
+
+```{r}
+#create master file of loan type 12, any aid, for black and white, male and female, cohort start 2007)
+loan12_master_file <- master_file %>% 
+  filter(loan_type == 12 ) %>% 
+  filter(type_of_aid == 1) %>% 
+  filter(race == 1 & 2) %>% 
+  filter(sex == 99) %>% 
+  filter (cohort_year.x == 2007)
+
+#get rid of duplicate rows 
+loan12_master_file <- unique(loan12_master_file)
+
+#save file
+write.csv(loan12_master_file, "/Users/tomiojo/Downloads/loan12_master.csv")
+
+```
+
+```{r}
+#in excel removed nonsense data (universities that showed more than one completion rate at 6 years)
+library(readr)
+subsidized_master <- read_csv("~/Downloads/loan1_master.csv")
+unsubsidized_master <- read_csv("~/Downloads/loan4_master.csv")
+parentplus_master <- read_csv("~/Downloads/loan7_master.csv")
+parentplusfederalfamily_master <- read_csv("~/Downloads/loan12_master.csv")
+
+```
+
 
