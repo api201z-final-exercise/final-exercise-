@@ -1,0 +1,77 @@
+#### Summary Statistics#####
+
+library(tidyverse)
+library(readr)
+
+setwd("~/Desktop/Grad School/HKS/Fall 2020/API 201Z/Final Exercise/Data")
+
+### reading in data ###
+parentplus1_master <- read_csv("final-exercise--main/parentplus1_master.csv")
+parentplusfederalfamily1_master <- read_csv("final-exercise--main/parentplusfederalfamily1_master.csv")
+unsubsidized1_master <- read_csv("final-exercise--main/unsubsidized1_master.csv")
+subsidized3_master <- read_csv("final-exercise--main 2/subsidized3_master.csv")
+
+### cleaning ###
+
+#selecting relevant vars from each dataset & adding prefix 
+pp1 <- parentplus1_master %>%
+            select(unitid, year, opeid.x, fips.x.x, years_since_entering_repay, cohort_year.x, repay_rate, repay_rate_lowincome, repay_rate_midincome, repay_count_highincome, race, sex, completion_rate_150pct,est_fte, type_of_aid, percent_of_students, inst_name_fsa, loan_type, loan_recipients_unitid, value_loan_disbursements_unitid, hbcu)
+  
+pp2 <- pp1 %>%
+          mutate(average_loan = value_loan_disbursements_unitid / loan_recipients_unitid) %>%
+          as.data.frame() %>%
+          rename_at(5:22, ~ paste("pp", ., sep = "_"))
+
+unsub1 <- unsubsidized1_master %>%
+  select(unitid, year, cohort_year.x, loan_type, loan_recipients_unitid, value_loan_disbursements_unitid, hbcu)
+
+unsub2 <- unsub1 %>%
+            mutate(average_loan = value_loan_disbursements_unitid / loan_recipients_unitid) %>%
+            as.data.frame() %>%
+            rename_at(3:8, ~ paste("unsub", ., sep = "_"))
+
+sub1 <- subsidized3_master %>%
+            select(unitid, year, value_loan_disbursements_unitid, loan_recipients_unitid, loan_type) %>%
+            mutate(average_loan = value_loan_disbursements_unitid / loan_recipients_unitid) 
+           
+sub2 <- sub1 %>%  
+          as.data.frame() %>%
+          rename_at(3:6, ~ paste("sub", ., sep = "_"))
+
+# merge files together #
+master_file <- merge(pp2, unsub2, all=TRUE)
+
+master_file_nov29 <- merge(master_file, sub2, all=TRUE)
+  
+master_file_nov29_2 <- master_file_nov29 %>%
+                        distinct()
+                      
+
+#light master file cleaning#
+
+names(master_file_nov29)[13] <- paste("grad rate") 
+names(master_file_nov29)[14] <- paste("enrollment") 
+names(master_file_nov29)[15] <- paste("received any aid") 
+names(master_file_nov29)[16] <- paste("pct students receiving aid") 
+
+#export to github
+write.csv(master_file_nov29_2, 'master_file_nov29_2.csv')
+
+#summary statistics
+
+
+library(gtsummary)
+library(arsenal)
+library(qwraps2)
+
+t1 <- master_file_nov29 %>%
+            select(year, pp_repay_rate, race, grad rate, enrollment, pct students receiving aid, pp_hbcu, pp_average_loan, unsub_average_loan)
+
+table1 <- tbl_summary(t1)
+
+table_one <- tableby(hbcu ~., data = master_file_nov29)
+summary(table_one, title = "College & University Data")
+
+
+
+
