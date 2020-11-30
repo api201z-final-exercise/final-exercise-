@@ -1,0 +1,159 @@
+---
+title: "API 201Z Final Code"
+author: "Ayotomiwa Ojo"
+date: "11/29/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r}
+library(readr)
+new_master <- read_csv("~/Downloads/newmaster_1129.csv")
+
+```
+
+
+```{r,results='asis'}
+
+#add percentage of subsidized, unsubsidized, and pp loan recipient columns
+library(dplyr)
+library(tidyverse)
+final_master <- new_master %>% 
+  mutate(prop_pp_recipient = pp_loan_recipients_unitid/pp_est_fte ) %>% 
+  mutate(prop_unsub_recipient = unsub_loan_recipients_unitid/pp_est_fte) %>% 
+  mutate(prop_sub_recipient = sub_loan_recipients_unitid/pp_est_fte)
+
+# repayment rate at 3 years regressed on HBCU and completion rate at 6 years
+
+repay3 <- final_master %>% 
+  filter(pp_years_since_entering_repay == 3)
+
+summary(lm(formula = pp_repay_rate~pp_hbcu + pp_completion_rate_150pct + prop_pp_recipient + prop_unsub_recipient + prop_sub_recipient + pp_average_loan + unsub_average_loan + sub_average_loan, data=repay3))
+
+
+# repayment rate at 5 years regressed on HBCU and completion rate at 6 years (excludes subsidized because we don't have that information)
+
+repay5<- final_master %>% 
+  filter(pp_years_since_entering_repay == 5)
+
+summary(lm(formula = pp_repay_rate~pp_hbcu + pp_completion_rate_150pct + prop_pp_recipient + prop_unsub_recipient + pp_average_loan + unsub_average_loan, na.action=na.omit, data=repay5))
+
+repay3_reg <- lm(formula = pp_repay_rate~pp_hbcu + pp_completion_rate_150pct + prop_pp_recipient + prop_unsub_recipient + prop_sub_recipient + pp_average_loan + unsub_average_loan + sub_average_loan, data=repay3)
+
+repay5_reg <- lm(formula = pp_repay_rate~pp_hbcu + pp_completion_rate_150pct + prop_pp_recipient + prop_unsub_recipient + pp_average_loan + unsub_average_loan, na.action=na.omit, data=repay5)
+
+library(stargazer)
+
+stargazer(repay3_reg, repay5_reg,
+          type="latex",
+          header= FALSE)
+
+```
+
+
+```{r, results= 'asis'}
+
+# repayment rate (low income) at 3 years regressed on HBCU and completion rate at 6 years
+
+summary(lm(formula = pp_repay_rate_lowincome~pp_hbcu + pp_completion_rate_150pct + prop_pp_recipient + prop_unsub_recipient + prop_sub_recipient + pp_average_loan + unsub_average_loan + sub_average_loan, data=repay3))
+
+
+# repayment rate (low income) at 5 years regressed on HBCU and completion rate at 6 years (excludes subsidized because we don't have that information)
+
+repay5<- final_master %>% 
+  filter(pp_years_since_entering_repay == 5)
+
+summary(lm(formula = pp_repay_rate_lowincome~pp_hbcu + pp_completion_rate_150pct + prop_pp_recipient + prop_unsub_recipient + pp_average_loan + unsub_average_loan, data=repay5))
+
+repay3_li_reg <- lm(formula = pp_repay_rate_lowincome~pp_hbcu + pp_completion_rate_150pct + prop_pp_recipient + prop_unsub_recipient + prop_sub_recipient + pp_average_loan + unsub_average_loan + sub_average_loan, data=repay3)
+
+repay5_li_reg <- lm(formula = pp_repay_rate_lowincome~pp_hbcu + pp_completion_rate_150pct + prop_pp_recipient + prop_unsub_recipient + pp_average_loan + unsub_average_loan, data=repay5)
+
+library(stargazer)
+
+stargazer(repay3_li_reg, repay5_li_reg,
+          type="latex",
+          header= FALSE)
+
+```
+
+
+```{r, results= 'asis'}
+
+# repayment rate (middle income) at 3 years regressed on HBCU and completion rate at 6 years
+
+summary(lm(formula = pp_repay_rate_midincome~pp_hbcu + pp_completion_rate_150pct + prop_pp_recipient + prop_unsub_recipient + prop_sub_recipient + pp_average_loan + unsub_average_loan + sub_average_loan+ avg.total_loans, data=repay3))
+
+
+# repayment rate (middle income) at 5 years regressed on HBCU and completion rate at 6 years (excludes subsidized because we don't have that information)
+
+
+summary(lm(formula = pp_repay_rate_midincome~pp_hbcu + pp_completion_rate_150pct + prop_pp_recipient + prop_unsub_recipient + pp_average_loan + unsub_average_loan, data=repay5))
+
+#create nice table
+repay3_mi_reg <- lm(formula = pp_repay_rate_midincome~pp_hbcu + pp_completion_rate_150pct + prop_pp_recipient + prop_unsub_recipient + prop_sub_recipient + pp_average_loan + unsub_average_loan + sub_average_loan+ avg.total_loans, data=repay3)
+
+repay5_mi_reg <- lm(formula = pp_repay_rate_midincome~pp_hbcu + pp_completion_rate_150pct + prop_pp_recipient + prop_unsub_recipient + pp_average_loan + unsub_average_loan, data=repay5)
+
+
+stargazer(repay3_mi_reg, repay5_mi_reg,
+         type =  "latex",
+          header= FALSE)
+
+```
+
+```{r}
+# repayment rate (high income) at 3 years regressed on HBCU and completion rate at 6 years
+
+summary(lm(formula = repay_rate_highincome~pp_hbcu + pp_completion_rate_150pct + prop_pp_recipient + prop_unsub_recipient + prop_sub_recipient + pp_average_loan + unsub_average_loan + sub_average_loan+ avg.total_loans, data=repay3))
+
+
+# repayment rate (high income) at 5 years regressed on HBCU and completion rate at 6 years (excludes subsidized because we don't have that information)
+
+
+summary(lm(formula = repay_rate_highincome~pp_hbcu + pp_completion_rate_150pct + prop_pp_recipient + prop_unsub_recipient + pp_average_loan + unsub_average_loan, data=repay5))
+
+#create nice table
+repay3_hi_reg <- lm(formula = repay_rate_highincome~pp_hbcu + pp_completion_rate_150pct + prop_pp_recipient + prop_unsub_recipient + prop_sub_recipient + pp_average_loan + unsub_average_loan + sub_average_loan+ avg.total_loans, data=repay3)
+
+repay5_hi_reg <- lm(formula = repay_rate_highincome~pp_hbcu + pp_completion_rate_150pct + prop_pp_recipient + prop_unsub_recipient + pp_average_loan + unsub_average_loan, data=repay5)
+
+
+stargazer(repay3_hi_reg, repay5_hi_reg,
+         type =  "text")
+```
+
+
+```{r}
+
+summary(lm(formula = pp_completion_rate_150pct~race, data=new_master))
+
+
+#completion rate regressed on percentage of students that are white
+new_master_white <- new_master %>% 
+  filter(pp_race == "white")
+
+summary(lm(formula = pp_completion_rate_150pct~pp_percent_of_students, data=new_master_white))
+
+#average loan amount and hbcu status
+
+new_master_hbcu <- new_master %>% 
+  filter(pp_hbcu == "Yes")
+
+new_master_pwi <- new_master %>% 
+  filter(pp_hbcu == "No")
+
+head(new_master_hbcu)
+
+t.test(new_master_pwi$avg.total_loans,new_master_hbcu$avg.total_loans)
+
+t.test(new_master_pwi$percent_no_aid,new_master_hbcu$percent_no_aid)
+```
+
